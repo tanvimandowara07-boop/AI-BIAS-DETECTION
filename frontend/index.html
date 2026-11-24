@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Bias Detector – Fairness audit for your data</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--bg:#f5f7fb;--surface:#fff;--ink:#0e1424;--muted:#667085;--line:#e3e8f2;--accent:#2447ff;--bad:#e5484d;--warn:#e08a1e;--ok:#1f9d6b;--tint:#eef1ff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0f1a;--surface:#141a29;--ink:#eef1f8;--muted:#9aa4b8;--line:#25304a;--accent:#7c93ff;--tint:#1b2440}}
+:root[data-theme="dark"]{--bg:#0b0f1a;--surface:#141a29;--ink:#eef1f8;--muted:#9aa4b8;--line:#25304a;--accent:#7c93ff;--tint:#1b2440}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 "Plus Jakarta Sans",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:16px 18px 60px}
+nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700}
+.brand i{width:26px;height:26px;border-radius:8px;background:var(--ink);display:inline-block;position:relative}
+.brand i::after{content:"";position:absolute;inset:8px;border:2px solid var(--bg);border-radius:50%}
+.pills{display:flex;gap:2px;align-items:center}
+.pills button{border:0;background:none;color:var(--muted);padding:6px 14px;border-radius:999px;font:600 13px inherit;cursor:pointer}
+.pills button[aria-current="page"]{background:var(--ink);color:var(--bg)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{border:0;border-radius:9px;padding:12px 20px;font-weight:600;font-size:14px}
+.dark{background:var(--ink);color:var(--bg)}.light{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.hero{text-align:center;padding:48px 0 34px;background:radial-gradient(ellipse 60% 50% at 50% 35%,rgba(36,71,255,.08),transparent 70%)}
+.tag{display:inline-block;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:26px}
+h1{font:800 clamp(38px,8.5vw,86px)/1 "Plus Jakarta Sans",sans-serif;letter-spacing:-.04em;margin:0 auto 22px;max-width:11em}
+h1 em{font-style:normal;color:var(--accent)}
+.sub{color:var(--muted);max-width:30em;margin:0 auto 26px;font-size:15px}
+.cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.card,.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card b{display:block;margin-bottom:4px}.card span,.small{color:var(--muted);font-size:13px}
+.tag::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#12a37f;margin-right:8px}
+.feats .card:nth-child(2) .ic{background:#e3f7f1;color:#12a37f}
+.feats .card:nth-child(3) .ic{background:#ffece3;color:#e8590c}
+.ic{width:34px;height:34px;border-radius:9px;background:var(--tint);color:var(--accent);display:grid;place-items:center;font-weight:700;margin-bottom:10px}
+@media(max-width:720px){.feats,.stats,.two{grid-template-columns:1fr!important}}
+h2{font:700 26px/1.2 "Plus Jakarta Sans";letter-spacing:-.02em;margin:6px 0 14px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:44px 16px;text-align:center;background:var(--surface)}
+.drop.over{border-color:var(--accent);background:var(--tint)}
+label.f{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+select{width:100%;max-width:340px;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 16px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;background:var(--bg)}
+.chip:has(input:checked){background:var(--tint);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip input{margin-right:6px}
+.banner{display:flex;justify-content:space-between;align-items:center;gap:10px;border-radius:12px;padding:12px 16px;margin-bottom:14px;border:1px solid}
+.banner.bad{background:color-mix(in srgb,var(--bad) 10%,var(--surface));border-color:color-mix(in srgb,var(--bad) 35%,var(--line))}
+.banner.ok{background:color-mix(in srgb,var(--ok) 10%,var(--surface));border-color:color-mix(in srgb,var(--ok) 35%,var(--line))}
+.badge{font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px;color:#fff}
+.two{display:grid;grid-template-columns:1fr 1.4fr;gap:14px}
+.big{font:800 84px/1 "Plus Jakarta Sans";letter-spacing:-.04em}
+.lab{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-bottom:8px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:14px 0}
+.stat b{font:800 26px/1.1 "Plus Jakarta Sans";display:block;letter-spacing:-.02em}
+.tagsm{font-size:11px;font-weight:700}
+.gauge{width:100%;max-width:300px;display:block;margin:0 auto}
+.attrs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:720px){.attrs{grid-template-columns:1fr}}
+.arow{display:flex;justify-content:space-between;font-weight:700;font-size:14px}
+.track{height:6px;border-radius:4px;background:var(--line);margin:8px 0;overflow:hidden}
+.track span{display:block;height:100%;border-radius:4px}
+.grp{display:grid;grid-template-columns:84px 1fr 42px;gap:8px;font-size:12px;align-items:center;margin:4px 0;color:var(--muted)}
+.grp div{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.grp div span{display:block;height:100%;background:var(--accent);opacity:.75}
+ul{margin:6px 0 0;padding-left:20px}
+.empty{text-align:center;padding:50px 16px;color:var(--muted)}
+footer{margin-top:32px;font-size:12px;color:var(--muted);max-width:46em}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><div class="brand"><i></i>AI Bias Detector</div>
+<div class="pills"><button data-v="home" aria-current="page">Home</button><button data-v="upload">Upload</button><button data-v="results">Results</button><button data-v="history">History</button><button id="theme" aria-label="Toggle theme">◐</button></div></nav>
+
+<section id="v-home">
+<div class="hero"><div class="tag">Fairness intelligence platform</div>
+<h1>Your model is making <em>decisions.</em> Is it fair?</h1>
+<p class="sub">Upload a dataset. Get a complete bias audit across gender, age, race and socioeconomic groups in seconds.</p>
+<div class="cta"><button class="btn dark" id="h-go">Analyze now</button><button class="btn light" id="h-sample">View sample report</button></div></div>
+<div class="feats">
+<div class="card"><div class="ic">1</div><b>Any CSV, any outcome</b><span>Pick the decision column (approved, hired, admitted) and the groups to test.</span></div>
+<div class="card"><div class="ic">2</div><b>Four-fifths rule</b><span>Disparity ratio per group, the standard test for adverse impact in hiring and lending.</span></div>
+<div class="card"><div class="ic">3</div><b>Private by design</b><span>The file is analysed in memory on your own machine; only the results are saved.</span></div></div>
+</section>
+
+<section id="v-upload" hidden>
+<h2>Upload a dataset</h2>
+<div class="drop" id="drop"><p><b>Drop a CSV file here</b></p><p class="small" id="fmsg">First row must be column headers. Each row is one decision about one person.</p>
+<button class="btn dark" id="pick">Choose CSV</button> <button class="btn light" id="u-sample">Use sample data</button>
+<input type="file" id="file" accept=".csv,.tsv,.txt" hidden></div>
+<div id="cfg" style="margin-top:14px"></div>
+</section>
+
+<section id="v-results" hidden></section>
+<section id="v-history" hidden></section>
+
+<footer>Method: for each attribute, groups are compared on the rate of the favourable outcome. The disparity ratio is the lowest group rate divided by the highest, and the bias score is (1 − ratio) × 100. A ratio under 0.80 fails the four-fifths rule. Groups under 5 rows are ignored. This shows statistical disparity, not its cause, and is not legal advice.</footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let DATA=null,CFG=null,RES=null;
+const CID=(()=>{try{let c=localStorage.getItem("cid");if(!c){c=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now());localStorage.setItem("cid",c)}return c}catch(e){return "anon"}})();
+const api=(u,o={})=>fetch(u,{...o,headers:{...(o.headers||{}),"X-Client-Id":CID}});
+const PROT=[["Gender",/gender|(^|[_\s])sex($|[_\s])/i],["Age",/(^|[_\s])age($|[_\s])/i],["Race",/race|ethnic/i],["Religion",/religio/i],["Socioeconomic",/income|salary|wealth|socio/i],["Marital status",/marital/i],["Disability",/disab/i],["Nationality",/national|citizen|origin/i]];
+const OUTRE=/approv|outcome|decision|hired|selected|target|label|admit|result|status|default|accept|shortlist/i;
+const POS=/^(1|yes|y|true|approved|approve|hired|accepted|admitted|selected|pass|passed|positive|granted|good)$/i;
+function go(v){["home","upload","results","history"].forEach(x=>{$("v-"+x).hidden=x!==v});document.querySelectorAll(".pills [data-v]").forEach(b=>b.toggleAttribute("aria-current",b.dataset.v===v)||0);document.querySelectorAll(".pills [data-v]").forEach(b=>{if(b.dataset.v===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});if(v==="results")renderRes();if(v==="history")renderHist();scrollTo(0,0)}
+document.querySelectorAll(".pills [data-v]").forEach(b=>b.onclick=()=>go(b.dataset.v));
+$("h-go").onclick=()=>go("upload");$("h-sample").onclick=()=>loadText(sampleCSV(),"loan_applications_sample.csv",true);$("u-sample").onclick=()=>loadText(sampleCSV(),"loan_applications_sample.csv",true);
+$("pick").onclick=()=>$("file").click();$("file").onchange=e=>e.target.files[0]&&readFile(e.target.files[0]);
+const dz=$("drop");["dragover","dragenter"].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.add("over")}));
+["dragleave","drop"].forEach(v=>dz.addEventListener(v,e=>{e.preventDefault();dz.classList.remove("over")}));
+dz.addEventListener("drop",e=>e.dataTransfer.files[0]&&readFile(e.dataTransfer.files[0]));
+async function readFile(f){loadText(await f.text(),f.name,false)}
+
+function parseCSV(t){const d=(t.split("\n")[0].match(/;/g)||[]).length>(t.split("\n")[0].match(/,/g)||[]).length?";":",";
+  const rows=[];let r=[],f="",q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c=='"')q=true;else if(c===d){r.push(f);f=""}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;r.push(f);f="";if(r.length>1||r[0]!=="")rows.push(r);r=[]}
+    else f+=c}
+  if(f!==""||r.length){r.push(f);rows.push(r)}return rows}
+
+function loadText(t,name,runNow){
+  const all=parseCSV(t.replace(/^\uFEFF/,""));
+  if(all.length<11||all[0].length<2){go("upload");$("fmsg").textContent="That file needs a header row, at least 2 columns and 10 rows of data.";return}
+  const head=all[0].map(h=>h.trim()),rows=all.slice(1).filter(r=>r.length===head.length);
+  DATA={name,head,rows,raw:t};
+  let oi=head.findIndex((h,i)=>OUTRE.test(h)&&!PROT.some(p=>p[1].test(h)));if(oi<0)oi=head.length-1;
+  CFG={oi,pos:guessPos(oi),sel:new Set(head.map((h,i)=>i).filter(i=>i!==oi&&PROT.some(p=>p[1].test(head[i]))))};
+  if(runNow){runAudit()}else{go("upload");$("fmsg").textContent=name+" loaded.";showCfg()}}
+function uniq(i){return [...new Set(DATA.rows.map(r=>(r[i]||"").trim()))].filter(v=>v!=="")}
+function guessPos(i){const u=uniq(i);return u.find(v=>POS.test(v))||u.sort().slice(-1)[0]||""}
+
+function showCfg(){const {head,rows,name}=DATA;
+  const u=uniq(CFG.oi).slice(0,12);
+  $("cfg").innerHTML='<div class="panel"><b>'+esc(name)+'</b> <span class="small">'+rows.length.toLocaleString()+' rows, '+head.length+' columns</span>'+
+  '<label class="f" for="oc">Outcome column (the decision)</label><select id="oc">'+head.map((h,i)=>'<option value="'+i+'"'+(i===CFG.oi?" selected":"")+'>'+esc(h)+'</option>').join("")+'</select>'+
+  '<label class="f" for="pv">Favourable value</label><select id="pv">'+u.map(v=>'<option'+(v===CFG.pos?" selected":"")+'>'+esc(v)+'</option>').join("")+'</select>'+
+  '<label class="f">Attributes to test for bias</label><div class="chips">'+head.map((h,i)=>i===CFG.oi?"":'<label class="chip"><input type="checkbox" data-i="'+i+'"'+(CFG.sel.has(i)?" checked":"")+'>'+esc(h)+'</label>').join("")+'</div>'+
+  '<button class="btn dark" id="run">Run bias audit</button></div>';
+  $("oc").onchange=e=>{CFG.oi=+e.target.value;CFG.sel.delete(CFG.oi);CFG.pos=guessPos(CFG.oi);showCfg()};
+  $("pv").onchange=e=>CFG.pos=e.target.value;
+  document.querySelectorAll("#cfg input[data-i]").forEach(c=>c.onchange=()=>c.checked?CFG.sel.add(+c.dataset.i):CFG.sel.delete(+c.dataset.i));
+  $("run").onclick=runAudit}
+
+function groupsFor(i){const h=DATA.head[i],rows=DATA.rows,oi=CFG.oi;
+  const vals=rows.map(r=>(r[i]||"").trim()),nums=vals.map(Number),isNum=vals.every((v,k)=>v!==""&&!isNaN(nums[k])),u=new Set(vals);
+  let lab=null;
+  if(isNum&&u.size>8){
+    if(/(^|[_\s])age($|[_\s])/i.test(h))lab=v=>v<25?"Under 25":v<45?"25–44":v<60?"45–59":"60+";
+    else{const s=[...nums].sort((a,b)=>a-b),q1=s[Math.floor(s.length/3)],q2=s[Math.floor(2*s.length/3)];lab=v=>v<q1?"Lowest third":v<q2?"Middle third":"Top third"}}
+  else if(u.size>12)return null;
+  const g={};rows.forEach((r,k)=>{const key=lab?lab(nums[k]):vals[k];if(key==="")return;const o=g[key]||(g[key]={n:0,p:0});o.n++;if((r[oi]||"").trim()===CFG.pos)o.p++});
+  const a=Object.entries(g).filter(([k,v])=>v.n>=5).map(([k,v])=>({label:k,n:v.n,rate:v.p/v.n})).sort((x,y)=>y.rate-x.rate);
+  return a.length>1?a:null}
+function nameOf(i){const h=DATA.head[i],p=PROT.find(p=>p[1].test(h));return p?p[0]:h}
+async function runAudit(){
+  try{const r=await api("/api/audit",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name:DATA.name,csv:DATA.raw,outcome:DATA.head[CFG.oi],favourable:CFG.pos,attrs:[...CFG.sel].map(i=>DATA.head[i])})});
+    const j=await r.json();if(!r.ok)throw new Error(j.detail||"Audit failed");RES=j;go("results")}
+  catch(e){alert("Could not run the audit: "+e.message+". Is the backend running?")}}
+async function renderHist(){const o=$("v-history");o.innerHTML='<h2>Past audits</h2><p class="small">Loading…</p>';
+  try{const list=await (await api("/api/audits")).json();
+    o.innerHTML='<h2>Past audits</h2>'+(list.length?list.map(a=>'<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px"><div><b>'+esc(a.name)+'</b><div class="small">Score '+a.score+' · '+new Date(a.created*1000).toLocaleString()+'</div></div><div><button class="btn light" data-open="'+a.id+'">Open</button> <button class="btn light" data-del="'+a.id+'">Delete</button></div></div>').join(""):'<div class="empty">No saved audits yet. Run one from Upload.</div>');
+    o.querySelectorAll("[data-open]").forEach(b=>b.onclick=async()=>{RES=await (await api("/api/audits/"+b.dataset.open)).json();go("results")});
+    o.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{await api("/api/audits/"+b.dataset.del,{method:"DELETE"});renderHist()});
+  }catch(e){o.innerHTML='<div class="empty">Could not load history. Is the backend running?</div>'}}
+
+const lvl=s=>s<20?["Fair","var(--ok)"]:s<40?["Moderate","var(--warn)"]:s<60?["High","var(--bad)"]:["Severe","var(--bad)"];
+const pc=x=>Math.round(x*100)+"%";
+function renderRes(){const o=$("v-results");
+  if(!RES){o.innerHTML='<div class="empty"><p>No audit yet. Upload a dataset to see results.</p><button class="btn dark" id="r-go">Upload data</button></div>';$("r-go").onclick=()=>go("upload");return}
+  const R=RES,[L,C]=lvl(R.score),biased=R.score>=20;
+  if(!R.attrs.length){o.innerHTML='<div class="empty"><p>No testable attributes were found. Go back and select columns with 2–12 groups (or numeric columns) of at least 5 rows each.</p><button class="btn dark" id="r-go">Change selection</button></div>';$("r-go").onclick=()=>{go("upload");showCfg()};return}
+  const arc='M20 100 A80 80 0 0 1 180 100';
+  o.innerHTML='<div class="banner '+(biased?"bad":"ok")+'"><div><b>'+(biased?"Bias detected":"No significant bias detected")+'</b><div class="small">'+esc(R.name)+' · analyzed just now</div></div><span class="badge" style="background:'+(biased?"var(--bad)":"var(--ok)")+'">'+(biased?"BIASED":"FAIR")+'</span></div>'+
+  '<div class="two"><div class="card" style="border-left:3px solid '+C+'"><div class="lab">OVERALL BIAS SCORE</div><div class="big" style="color:'+C+'">'+R.score+'</div><p class="small">Scores of 20 or more fail the four-fifths rule. Level: <b>'+L+'</b>.</p></div>'+
+  '<div class="card"><div class="lab">SCORE VISUALIZATION</div><svg class="gauge" viewBox="0 0 200 125" role="img" aria-label="Bias score '+R.score+' of 100"><path d="'+arc+'" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round" pathLength="100"/><path d="'+arc+'" fill="none" stroke="'+C+'" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="'+Math.max(R.score,1)+' 100"/><text x="100" y="92" text-anchor="middle" font-size="34" font-weight="800" fill="var(--ink)">'+R.score+'</text><text x="100" y="108" text-anchor="middle" font-size="9" fill="var(--muted)">Bias score</text><text x="20" y="122" text-anchor="middle" font-size="9" fill="var(--muted)">0 · Fair</text><text x="180" y="122" text-anchor="middle" font-size="9" fill="var(--muted)">100 · Severe</text></svg></div></div>'+
+  '<div class="stats"><div class="card stat"><span class="small">Samples</span><b>'+R.n.toLocaleString()+'</b></div>'+
+  '<div class="card stat"><span class="small">Disparity ratio</span><b>'+R.ratio.toFixed(2)+'</b><span class="tagsm" style="color:'+(R.ratio<.8?"var(--bad)":"var(--ok)")+'">'+(R.ratio<.8?"↑ High":"✓ Passes 0.80")+'</span></div>'+
+  '<div class="card stat"><span class="small">'+esc(R.fav)+' rate</span><b>'+pc(R.rate)+'</b><span class="tagsm small">overall '+esc(R.outcome)+'</span></div>'+
+  '<div class="card stat"><span class="small">Features</span><b>'+R.cols+'</b></div></div>'+
+  '<h2>Bias breakdown by attribute</h2><div class="attrs">'+R.attrs.map(a=>{const [l,c]=lvl(a.score),gap=Math.round((1-a.ratio)*100);
+    return '<div class="card"><div class="arow"><span>'+esc(a.name)+' bias</span><span style="color:'+c+'">'+a.score+'/100</span></div><div class="track"><span style="width:'+a.score+'%;background:'+c+'"></span></div>'+
+    '<p class="small" style="margin:0 0 8px">'+esc(a.lo.label)+' receives the favourable outcome at '+pc(a.lo.rate)+' versus '+pc(a.hi.rate)+' for '+esc(a.hi.label)+', a '+gap+'% lower rate (ratio '+a.ratio.toFixed(2)+'). '+(a.ratio<.8?"Fails":"Passes")+' the four-fifths rule.</p>'+
+    a.groups.map(g=>'<div class="grp"><span>'+esc(g.label)+'</span><div><span style="width:'+g.rate*100+'%"></span></div><span>'+pc(g.rate)+'</span></div>').join("")+'</div>'}).join("")+'</div>'+
+  (biased?'<h2>What to do next</h2><div class="card"><ul><li>Rebalance or reweight the training data for '+R.attrs.filter(a=>a.score>=20).map(a=>esc(a.name.toLowerCase())).join(", ")+'.</li><li>Look for proxy features (postcode, school, name) that correlate with these attributes.</li><li>Test per-group thresholds, then re-run this audit to confirm the ratio moves above 0.80.</li></ul></div>':'');
+}
+function sampleCSV(){let s=42;const rnd=()=>(s=(s*1664525+1013904223)%4294967296)/4294967296;
+  const L=["applicant_id,gender,age,race,income,credit_score,years_employed,approved"];
+  for(let i=1;i<=600;i++){const g=rnd()<.5?"Female":"Male",age=18+Math.floor(rnd()*52),rr=rnd(),race=rr<.5?"Group A":rr<.8?"Group B":"Group C",inc=Math.round(20+rnd()*100),cs=Math.round(520+rnd()*300),ye=Math.floor(rnd()*20);
+    let p=.2+(cs-520)/300*.4+inc/400;if(g==="Female")p*=.6;if(age<25||age>=60)p*=.75;if(race==="Group B")p*=.85;if(race==="Group C")p*=.8;
+    L.push([1000+i,g,age,race,inc*1000,cs,ye,rnd()<p?"Approved":"Rejected"].join(","))}
+  return L.join("\n")}
+let dark=matchMedia("(prefers-color-scheme: dark)").matches;
+function th(){document.documentElement.dataset.theme=dark?"dark":"light"}$("theme").onclick=()=>{dark=!dark;th()};th();
+</script>
+</body>
+</html>

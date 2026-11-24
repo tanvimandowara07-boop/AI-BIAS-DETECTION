@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: ai-bias-detector
+    runtime: python
+    plan: free
+    buildCommand: echo "no dependencies to install"
+    startCommand: python backend/server.py
+    healthCheckPath: /api/health
